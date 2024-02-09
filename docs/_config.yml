@@ -37,7 +37,6 @@ linkedin_username: yuri-tan
 # Build settings
 theme: minima
 plugins:
-  - jekyll-feed
   - jekyll-spaceship
 
 # Exclude from processing.
