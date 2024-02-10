@@ -102,7 +102,7 @@ class HeteroscedasticDropoutNet(nn.Module):
 When modelling both types of uncertainty, using our `.mc_predict()` method, we still need to combine them into a single predictive distribution. Last time, we had to uniformly sample from each CDF (approximated by the quantile predictions). This is because the quantile regression method does not make any distribution assumption. It just "follows the data". This time we've assumed our predicted distribution was a normal distribution. This means that all our (Monte Carlo Dropout) samples are normal distributions. This allows us to average all our sampled $\mu$s and $\sigma$s which makes the addition of epistemic uncertainty a lot less computationally heavy.
 
 <figure>
-  <img src="/assets/images/2020-03-29-prediction-uncertainty-part-2/hetroscedastic_results" alt="Hetroscedastic Results">
+  <img src="/assets/images/2020-03-29-prediction-uncertainty-part-2/hetroscedastic_results.png" alt="Hetroscedastic Results">
   <figcaption style="text-align: center;"><em>Figure 2: Some example results showing the predicted distribution and the ground truth.</em></figcaption>
 </figure> 
 
