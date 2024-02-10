@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Prediction uncertainty part 2 | yuritan.nl</title>
+<meta name="generator" content="Jekyll v3.9.3">
+<meta property="og:title" content="Prediction uncertainty part 2">
+<meta name="author" content="Yu Ri Tan">
+<meta property="og:locale" content="en_US">
+<meta name="description" content="In this post, I would like to continue where I left off in the previous post regarding prediction uncertainty by showing a second frequentist way of calculating uncertainty for regression problems. After fitting the quantiles (aleatoric uncertainty) and sampling using MCDropout (epistemic uncertainty), we combined the sampled distributions in a single distribution. We did this by sampling from each sampled CDF. This CDF however, wasn’t a full distribution but a collection of quantile predictions. In order to sample from it, we used linear interpolation in between the quantile predictions. Nothing wrong with that, but I wanted to see if there was an easier way to combine the distributions into a single predictive posterior distribution. In this blog post I’ll explain another way to calculate and combine aleatoric and epistemic uncertainty. All code used in this blog will be published on Github. In first notebooks you will find a more elaborate explaination of the code. In the next notebooks, as well as in the package, I’ve wrapped the model classes in a SKlearn-like interface. This allows me to create cleaner notebooks in the comparison phase.">
+<meta property="og:description" content="In this post, I would like to continue where I left off in the previous post regarding prediction uncertainty by showing a second frequentist way of calculating uncertainty for regression problems. After fitting the quantiles (aleatoric uncertainty) and sampling using MCDropout (epistemic uncertainty), we combined the sampled distributions in a single distribution. We did this by sampling from each sampled CDF. This CDF however, wasn’t a full distribution but a collection of quantile predictions. In order to sample from it, we used linear interpolation in between the quantile predictions. Nothing wrong with that, but I wanted to see if there was an easier way to combine the distributions into a single predictive posterior distribution. In this blog post I’ll explain another way to calculate and combine aleatoric and epistemic uncertainty. All code used in this blog will be published on Github. In first notebooks you will find a more elaborate explaination of the code. In the next notebooks, as well as in the package, I’ve wrapped the model classes in a SKlearn-like interface. This allows me to create cleaner notebooks in the comparison phase.">
+<link rel="canonical" href="/post/2020/03/29/prediction-uncertainty-part-2.html">
+<meta property="og:url" content="/post/2020/03/29/prediction-uncertainty-part-2.html">
+<meta property="og:site_name" content="yuritan.nl">
+<meta property="og:type" content="article">
+<meta property="article:published_time" content="2020-03-29T00:00:00+01:00">
+<meta name="twitter:card" content="summary">
+<meta property="twitter:title" content="Prediction uncertainty part 2">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Yu Ri Tan"},"dateModified":"2020-03-29T00:00:00+01:00","datePublished":"2020-03-29T00:00:00+01:00","description":"In this post, I would like to continue where I left off in the previous post regarding prediction uncertainty by showing a second frequentist way of calculating uncertainty for regression problems. After fitting the quantiles (aleatoric uncertainty) and sampling using MCDropout (epistemic uncertainty), we combined the sampled distributions in a single distribution. We did this by sampling from each sampled CDF. This CDF however, wasn’t a full distribution but a collection of quantile predictions. In order to sample from it, we used linear interpolation in between the quantile predictions. Nothing wrong with that, but I wanted to see if there was an easier way to combine the distributions into a single predictive posterior distribution. In this blog post I’ll explain another way to calculate and combine aleatoric and epistemic uncertainty. All code used in this blog will be published on Github. In first notebooks you will find a more elaborate explaination of the code. In the next notebooks, as well as in the package, I’ve wrapped the model classes in a SKlearn-like interface. This allows me to create cleaner notebooks in the comparison phase.","headline":"Prediction uncertainty part 2","mainEntityOfPage":{"@type":"WebPage","@id":"/post/2020/03/29/prediction-uncertainty-part-2.html"},"url":"/post/2020/03/29/prediction-uncertainty-part-2.html"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css">
+<link type="application/atom+xml" rel="alternate" href="/feed.xml" title="yuritan.nl">
+<script>MathJax={"tex":{"inlineMath":[["$","$"],["\\(","\\)"]],"displayMath":[["$$","$$"],["\\[","\\]"]]},"svg":{"fontCache":"global"}}</script><script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script><script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+<header class="site-header" role="banner">
+
+  <div class="wrapper">
+<a class="site-title" rel="author" href="/">yuritan.nl</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger">
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewbox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"></path>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/about/">About</a></div>
+      </nav>
+</div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Prediction uncertainty part 2</h1>
+    <p class="post-meta">
+      <time class="dt-published" datetime="2020-03-29T00:00:00+01:00" itemprop="datePublished">Mar 29, 2020
+      </time></p>
+    <img src="/assets/images/2020-03-29-prediction-uncertainty-part-2/title_pic.png" alt="Featured image"></header>
+
+  <p></p>
+  <div class="post-content e-content" itemprop="articleBody">
+    <p>In this post, I would like to continue where I left off in the previous post regarding prediction uncertainty by showing a second frequentist way of calculating uncertainty for regression problems. After fitting the quantiles (aleatoric uncertainty) and sampling using MCDropout (epistemic uncertainty), we combined the sampled distributions in a single distribution. We did this by sampling from each sampled CDF. This CDF however, wasn’t a full distribution but a collection of quantile predictions. In order to sample from it, we used linear interpolation in between the quantile predictions. Nothing wrong with that, but I wanted to see if there was an easier way to combine the distributions into a single predictive posterior distribution. In this blog post I’ll explain another way to calculate and combine aleatoric and epistemic uncertainty. All code used in this blog will be published on <a href="https://github.com/YuRiTan/prediction-uncertainty">Github</a>. In first notebooks you will find a more elaborate explaination of the code. In the next notebooks, as well as in the package, I’ve wrapped the model classes in a SKlearn-like interface. This allows me to create cleaner notebooks in the comparison phase.</p>
+
+<h2 id="the-data">The data</h2>
+
+<p>Like last time, we’re using a generated dataset, that looks like this:</p>
+
+<figure>
+  <img src="/assets/images/2020-03-29-prediction-uncertainty-part-2/TODO" alt="TODO">
+  <figcaption style="text-align: center;"><em>Figure 1: Overview of the data used in this post. we try to predict $y$ given $x$.</em></figcaption>
+</figure>
+
+<h2 id="predicting-parameters">Predicting parameters</h2>
+
+<p>This time, instead of predicting quantiles, we’re going to predict distribution parameters. Let’s assume our predictive distibution is normally distributed. This means that we need to predict the mean μ
+and the standard deviation $\sigma$. So how are going to do this? Let’s find out.</p>
+
+<h2 id="uncertainty-recap">Uncertainty recap</h2>
+
+<p>Let’s start with a short recap on the different types of uncertainty. In short, aleatoric uncertainty is the uncertainty in the data and epistemic uncertainty the uncertainty in your model. For more details, please checkout my previous post regarding prediction uncertainty. In this post we will try to model the aleatoric uncertainty by predicting $\mu$
+and $\sigma$ and assume that you know how to model the epistemic uncertainty using Monte Carlo Dropout.</p>
+
+<h2 id="predicting-mumu-and-sigmasigma">Predicting mu($\mu$) and sigma($\sigma$)</h2>
+
+<p>Predicting $\mu$ is something we often do when we need to do a single point prediction. But how about $\sigma$? Just like quantile regression, it’s all in the loss function. When training a neural network, you need a loss function. In our case, this loss function needs to get two predictions as input ($\mu$ and $\sigma$), and calculate a loss based on a single ground truth. But how do we compare a distribution with a single value? We basically want this true value to be very likely in our predicted distribution. Or in other words, we want to maximize the likelihood of the data given our (distribution) parameters. So how do we calculate this? Let’s start with the definition of the probability density function of the normal distribution [1]:</p>
+
+<p>$$
+\begin{array}{rcl}
+f(x|\mu,\sigma) &amp; = &amp; \frac{1}{\sigma\sqrt{2\pi}}e^{-\frac{1}{2}(\frac{x-\mu}{\sigma})^2}
+\end{array}
+$$</p>
+
+<p>With this defintion we can calulate how likely our data is given our parameters. But it’s a rather computationally heavy function to optimise for. We can rewrite this definition into a more efficient loss function like this:</p>
+
+<p>$$
+\begin{array}{rcl}
+f(x|\mu,\sigma) &amp; = &amp; \frac{1}{\sigma\sqrt{2\pi}}e^{-\frac{1}{2}(\frac{x-\mu}{\sigma})^2} \newline
+                &amp; = &amp; \ln\left(\frac{1}{\sigma\sqrt{2\pi}}e^{-\frac{1}{2}(\frac{x-\mu}{\sigma})^2}\right) \newline
+                &amp; = &amp; \ln\left(\frac{1}{\sigma\sqrt{2\pi}}\right) + \ln\left(e^{-\frac{1}{2}(\frac{x-\mu}{\sigma})^2}\right) \newline
+                &amp; = &amp; \ln\left(\frac{1}{\sigma}\right) + \ln\left(\frac{1}{\sqrt{2\pi}}\right) - \frac{(x-\mu)^2}{2\sigma^2} \ln\left(e\right) \newline
+                &amp; = &amp; -\ln(\sigma) -\frac{1}{2}\ln(2\pi) - \frac{(x-\mu)^2}{2\sigma^2} \newline
+\end{array}
+$$</p>
+
+<p>This is called the log likelihood. When optimizing loss functions, we try to minimise the loss. Therefore we multiply our log likelihood * -1 and try to minimize instead of maximise it. This is called the negative log likelihood. With this loss function we are able to train a neural network!</p>
+
+<p>We can of course create a python method that calculates this loss, but PyTorch already did this for you in their <a href="https://pytorch.org/docs/stable/distributions.html">torch.distributions</a> module. We just have to create normal distribution with the required parameters, and simply call the <code class="language-plaintext highlighter-rouge">log_prob</code> function with our true value. By the way, there are many other distributions in the module too!</p>
+
+<p>All together, our (gaussian) negative log likelihood loss function looks like this:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">gaussian_nll_loss</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
+    <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="n">output</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">1</span><span class="p">],</span> <span class="n">torch</span><span class="p">.</span><span class="n">exp</span><span class="p">(</span><span class="n">output</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:])</span>
+    <span class="n">dist</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">distributions</span><span class="p">.</span><span class="n">Normal</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span>
+    <span class="n">loss</span> <span class="o">=</span> <span class="o">-</span><span class="n">dist</span><span class="p">.</span><span class="n">log_prob</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">loss</span><span class="p">.</span><span class="nb">sum</span><span class="p">()</span>
+</code></pre></div></div>
+
+<h2 id="tying-it-all-together">Tying it all together</h2>
+
+<p>Like last time, we will create a neural network using PyTorch. This network is very similar like the <code class="language-plaintext highlighter-rouge">DeepQuantileRegression</code> network from the last post, but now the output size should be equal to 2 (for both $\mu$ and $\sigma$).</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span>
+
+<span class="k">class</span> <span class="nc">HeteroscedasticDropoutNet</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">().</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">model_</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s">'input_size'</span><span class="p">],</span> <span class="n">params</span><span class="p">[</span><span class="s">'hidden_size'</span><span class="p">]),</span>
+            <span class="c1"># nn.PReLU(),  # when modelling non-linearities
+</span>            <span class="n">nn</span><span class="p">.</span><span class="n">Dropout</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s">'dropout_p'</span><span class="p">]),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s">'hidden_size'</span><span class="p">],</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">optim_</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">optim</span><span class="p">.</span><span class="n">Adam</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">model_</span><span class="p">.</span><span class="n">parameters</span><span class="p">(),</span> 
+            <span class="n">lr</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s">'lr'</span><span class="p">]</span>
+        <span class="p">)</span>
+    
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">model_</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        
+    <span class="k">def</span> <span class="nf">mc_predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="mi">4000</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">torch</span><span class="p">.</span><span class="n">no_grad</span><span class="p">():</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">model_</span><span class="p">.</span><span class="n">train</span><span class="p">()</span>
+            <span class="n">preds</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">stack</span><span class="p">([</span><span class="bp">self</span><span class="p">.</span><span class="n">model_</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">samples</span><span class="p">)],</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">preds</span>
+</code></pre></div></div>
+
+<h2 id="approximate-predictive-posterior-distribution">Approximate predictive posterior distribution</h2>
+
+<p>When modelling both types of uncertainty, using our <code class="language-plaintext highlighter-rouge">.mc_predict()</code> method, we still need to combine them into a single predictive distribution. Last time, we had to uniformly sample from each CDF (approximated by the quantile predictions). This is because the quantile regression method does not make any distribution assumption. It just “follows the data”. This time we’ve assumed our predicted distribution was a normal distribution. This means that all our (Monte Carlo Dropout) samples are normal distributions. This allows us to average all our sampled $\mu$s and $\sigma$s which makes the addition of epistemic uncertainty a lot less computationally heavy.</p>
+
+<figure>
+  <img src="/assets/images/2020-03-29-prediction-uncertainty-part-2/TODO" alt="Aleatoric uncertainty">
+  <figcaption style="text-align: center;"><em>Figure 2: Some example results showing the predicted distribution and the ground truth.</em></figcaption>
+</figure>
+
+<h2 id="discussion">Discussion</h2>
+
+<p>So there it is! Another way of predicting multiple types of uncertainty. Again, we used a toy dataset which only contained one feature to predict $y$. Therefore, the dropout rate had a big impact on the uncertainty and training process. Something that I would like to do next is using this model on a more real life dataset and evaluating the uncertainty. Then we are able to compare different methods. How well do these approaches perform agains eachother, and against a full baysian approach?</p>
+
+<h2 id="references">References</h2>
+
+<p>[1] <a href="https://en.wikipedia.org/wiki/Normal_distribution">https://en.wikipedia.org/wiki/Normal_distribution</a></p>
+
+  </div>
+<a class="u-url" href="/post/2020/03/29/prediction-uncertainty-part-2.html" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">yuritan.nl</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">Yu Ri Tan</li>
+</ul>
+      </div>
+
+      <div class="footer-col footer-col-2">
+<ul class="social-media-list">
+<li><a href="https://github.com/YuRiTan"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">YuRiTan</span></a></li>
+<li><a href="https://www.linkedin.com/in/yuri-tan"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#linkedin"></use></svg> <span class="username">yuri-tan</span></a></li>
+</ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>Welcome to my blog!</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
