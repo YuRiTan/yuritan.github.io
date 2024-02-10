@@ -73,7 +73,7 @@ MAE - BLR    : 4.012
 Here it seems that the mean of the two fequentist approaches are a little better than the bayesian approach. So how about the uncertainty? In order to evaluate this, I'll use the Continuous Ranked Probability Score (CRPS). This metric calculates the area between the predicted distribution as CDF and the actual value as (Heaviside) step function. This sounds quite complicated, but makes more sense when looking at it visually:
 
 <figure>
-  <img src="/assets/images/2020-11-16-uncertainty-evaluation-a-comparison-of-different-approaches/TODO" alt="TODO">
+  <img src="/assets/images/2020-11-16-uncertainty-evaluation-a-comparison-of-different-approaches/cprs_continuous_empirical" alt="CRPS Continuous and Empirical">
   <figcaption style="text-align: center;"><em>Figure 2: Plot showing CRPS for a continuous and empirical CDF.</em></figcaption>
 </figure> 
 
@@ -127,7 +127,7 @@ Here we see that the `HMCDN`` model predicts best, and the other two equally goo
 Now we know how to evaluate a predicted distribution with a single true value, but how well does the distribution represent reality? Does the predicted probability really reflect actual probabilities? One way to check this is by making a calibration plot (or Reliability plot). In order to make this plot, we have to get some quantile values from the predicted distributions. Then you can compare how well this quantile fits the actual quantile. In other words, when predicting the median (quantile .5) we expect that these predictions overpredict in 50% of the cases. The same holds for the other quantiles. If you calculate this for a set of quantiles, you can make the following plot:
 
 <figure>
-  <img src="/assets/images/2020-11-16-uncertainty-evaluation-a-comparison-of-different-approaches/TODO" alt="TODO">
+  <img src="/assets/images/2020-11-16-uncertainty-evaluation-a-comparison-of-different-approaches/calibration-plots.png" alt="Calibration plots">
   <figcaption style="text-align: center;"><em>Figure 6: Calibration plot for both the toy data set as well as the Boston housing data set.</em></figcaption>
 </figure> 
 
