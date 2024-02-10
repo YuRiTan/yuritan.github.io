@@ -36,11 +36,11 @@ linkedin_username: yuri-tan
 
 # Build settings
 theme: minima
-plugins:
-  - jekyll-spaceship
+# plugins:
+  # - jekyll-spaceship
 
-kramdown:
-  math_engine: mathjax
+# kramdown:
+#   math_engine: mathjax
 
 # Exclude from processing.
 # The following items will not be processed, by default.
