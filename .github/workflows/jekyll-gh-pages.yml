@@ -31,10 +31,15 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v4
       - name: Build with Jekyll
-        uses: actions/jekyll-build-pages@v1
-        with:
-          source: ./docs/
-          destination: ./_site
+        # Outputs to the './_site' directory by default
+        run: bundle exec jekyll build --source ./docs/ --destination ./_site --baseurl "${{ steps.pages.outputs.base_path }}"
+        env:
+          JEKYLL_ENV: production
+      # - name: Build with Jekyll
+      #   uses: actions/jekyll-build-pages@v1
+      #   with:
+      #     source: ./docs/
+      #     destination: ./_site
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
 
