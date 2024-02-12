@@ -230,8 +230,8 @@ In this example, the dropout rate had a big impact on the uncertainty and traini
 
 ## References
 
-[1] [https://en.wikipedia.org/wiki/Uncertainty_quantification](https://en.wikipedia.org/wiki/Uncertainty_quantification)
-
-[2] Alex, J. Cannon, Non-crossing nonlinear regression quantiles by monotone compositequantile regression neural network, with application to rainfallextremes, [https://link.springer.com/content/pdf/10.1007%2Fs00477-018-1573-6.pdf](https://link.springer.com/content/pdf/10.1007%2Fs00477-018-1573-6.pdf)
-
-[3] Yarin Gal, Zoubin Ghahramani, Dropout as a Bayesian Approximation: Representing Model Uncertainty in Deep Learning, [https://arxiv.org/pdf/1506.02142.pdf](https://arxiv.org/pdf/1506.02142.pdf)
+<small>
+[1] <a href="https://en.wikipedia.org/wiki/Uncertainty_quantification">https://en.wikipedia.org/wiki/Uncertainty_quantification</a> <br>
+[2] Alex, J. Cannon, Non-crossing nonlinear regression quantiles by monotone compositequantile regression neural network, with application to rainfallextremes, <a href="https://link.springer.com/content/pdf/10.1007%2Fs00477-018-1573-6.pdf">https://link.springer.com/content/pdf/10.1007%2Fs00477-018-1573-6.pdf</a> <br>
+[3] Yarin Gal, Zoubin Ghahramani, Dropout as a Bayesian Approximation: Representing Model Uncertainty in Deep Learning, <a href="https://arxiv.org/pdf/1506.02142.pdf">https://arxiv.org/pdf/1506.02142.pdf</a> <br>
+</small>

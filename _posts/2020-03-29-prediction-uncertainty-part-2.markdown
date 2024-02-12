@@ -112,4 +112,6 @@ So there it is! Another way of predicting multiple types of uncertainty. Again, 
 
 ## References
 
-[1] [https://en.wikipedia.org/wiki/Normal_distribution](https://en.wikipedia.org/wiki/Normal_distribution)
+<small>
+[1] <a href="https://en.wikipedia.org/wiki/Normal_distribution">https://en.wikipedia.org/wiki/Normal_distribution</a> <br>
+</small>

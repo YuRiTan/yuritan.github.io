@@ -140,8 +140,8 @@ In the last three posts, I've discussed two frequentist ways of calculating pred
 
 ## References
 
-[1] [https://en.wikipedia.org/wiki/Empirical_distribution_function](https://en.wikipedia.org/wiki/Empirical_distribution_function)
-
-[2] [https://github.com/TheClimateCorporation/properscoring](https://github.com/TheClimateCorporation/properscoring)
-
-[3] [https://scikit-learn.org/stable/modules/generated/sklearn.datasets.load_boston.html](https://scikit-learn.org/stable/modules/generated/sklearn.datasets.load_boston.html)
+<small>
+[1] <a href="https://en.wikipedia.org/wiki/Empirical_distribution_function">https://en.wikipedia.org/wiki/Empirical_distribution_function</a> <br>
+[2] <a href="https://github.com/TheClimateCorporation/properscoring">https://github.com/TheClimateCorporation/properscoring</a> <br>
+[3] <a href="https://scikit-learn.org/stable/modules/generated/sklearn.datasets.load_boston.html">https://scikit-learn.org/stable/modules/generated/sklearn.datasets.load_boston.html</a> <br>
+</small>
