@@ -18,7 +18,7 @@ There are any different ways to model this, but I've chosen to model a bayesian 
 $\sigma_{scale} \sim Normal(0,10)$
 $\sigma_{bias} \sim HalfNormal(10)$
 
-$\sigma = \sigma{bias} + \sigma{scale} * x$
+$\sigma = \sigma_{bias} + \sigma_{scale} * x$
 
 #### Priors:
 
@@ -73,7 +73,7 @@ MAE - BLR    : 4.012
 Here it seems that the mean of the two fequentist approaches are a little better than the bayesian approach. So how about the uncertainty? In order to evaluate this, I'll use the Continuous Ranked Probability Score (CRPS). This metric calculates the area between the predicted distribution as CDF and the actual value as (Heaviside) step function. This sounds quite complicated, but makes more sense when looking at it visually:
 
 <figure>
-  <img src="/assets/images/2020-11-16-uncertainty-evaluation-a-comparison-of-different-approaches/cprs_continuous_empirical" alt="CRPS Continuous and Empirical">
+  <img src="/assets/images/2020-11-16-uncertainty-evaluation-a-comparison-of-different-approaches/cprs_continuous_empirical.png" alt="CRPS Continuous and Empirical">
   <figcaption style="text-align: center;"><em>Figure 2: Plot showing CRPS for a continuous and empirical CDF.</em></figcaption>
 </figure> 
 
